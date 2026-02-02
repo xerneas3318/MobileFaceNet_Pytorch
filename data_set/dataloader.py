@@ -32,19 +32,34 @@ class LFW(data.Dataset):
         self.flags = []
 
         with open(file_list) as f:
-            pairs = f.read().splitlines()[1:]
-        for i, p in enumerate(pairs):
-            p = p.split('\t')
+            lines = f.read().splitlines()
+        # Skip header line only if it looks like standard LFW header (no digits)
+        if lines and not any(c.isdigit() for c in lines[0]):
+            lines = lines[1:]
+        for i, line in enumerate(lines):
+            p = line.split('\t')
             if len(p) == 3:
+                # Standard LFW: same person (name, idx1, idx2)
                 nameL = p[0] + '/' + p[0] + '_' + '{:04}.jpg'.format(int(p[1]))
                 nameR = p[0] + '/' + p[0] + '_' + '{:04}.jpg'.format(int(p[2]))
                 fold = i // 600
                 flag = 1
             elif len(p) == 4:
+                # Standard LFW: different persons
                 nameL = p[0] + '/' + p[0] + '_' + '{:04}.jpg'.format(int(p[1]))
                 nameR = p[2] + '/' + p[2] + '_' + '{:04}.jpg'.format(int(p[3]))
                 fold = i // 600
                 flag = -1
+            else:
+                # Flat format from .bin conversion: "file1 file2 label" (space-separated)
+                p = line.split()
+                if len(p) >= 3:
+                    nameL, nameR = p[0], p[1]
+                    flag = int(p[2])
+                    flag = 1 if flag == 1 else -1
+                    fold = i // 600
+                else:
+                    continue
             self.nameLs.append(nameL)
             self.nameRs.append(nameR)
             self.folds.append(fold)

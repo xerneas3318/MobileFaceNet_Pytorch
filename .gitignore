@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project: checkpoints and weights
+saving_*_ckpt/
+Weights/
+MTCNN/weights/
+
+# Project: logs
+logging/*.txt
+train_*_logging.txt
+test_*_logging.txt
+saving_ms1m_ckpt/
+*.log
+
+# Project: data (large / downloaded)
+data_set/*.bin
+data_set/LFW/
+data_set/CFP-FP/
+data_set/AgeDB-30/
+data_set/CASIA/
+data_set/faces_emore_images/
+data_set/CASIA_Webface_Image/
+data_set/webface_112x112/
+data_set/ms1m-arcface/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints

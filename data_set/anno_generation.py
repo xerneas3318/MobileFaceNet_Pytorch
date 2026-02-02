@@ -20,22 +20,18 @@ docs = [f for f in os.listdir(imgdir) if not f.startswith('.')]
 docs.sort()
 
 label = 0
-for name in docs:
+with open(list_txt_file, 'w') as f:
+    for name in docs:
+        print('writing name:', name)
+        image_folder = imgdir+'/'+name
+        files = [x for x in os.listdir(image_folder) if not x.startswith('.')]
+        files.sort()
 
-    print('writing name:', name)
-    image_folder = imgdir+'/'+name
-    L=''
-    files = [f for f in os.listdir(image_folder) if not f.startswith('.')]
-    files.sort()
-
-    for file in files:
-        txt_name = os.path.join(name, file)
-
-        with open(list_txt_file, 'a') as f:
+        for fn in files:
+            txt_name = os.path.join(name, fn)
             f.write(txt_name+' '+str(label)+'\n')
-        f.close()
 
-    label+= 1
+        label += 1
 
 print('writing finished')
 

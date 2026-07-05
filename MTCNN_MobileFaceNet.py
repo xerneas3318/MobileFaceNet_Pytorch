@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='for face verification')
     parser.add_argument('-img', '--img', help='upload image', default='images/Howard.jpg', type=str)
-    parser.add_argument('-th','--threshold',help='threshold score to decide identical faces',default=60, type=float)
+    parser.add_argument('-th','--threshold',help='threshold score to decide identical faces',default=80, type=float)
     parser.add_argument("-u", "--update", help="whether perform update the facebank",action="store_true", default= False)
     parser.add_argument("-tta", "--tta", help="whether test time augmentation",action="store_true", default= False)
     parser.add_argument("-c", "--score", help="whether show the confidence score",action="store_true",default= True )
@@ -40,9 +40,10 @@ if __name__ == '__main__':
 
     if args.update:
         targets, names = prepare_facebank(detect_model, path='facebank', tta=args.tta)
+        targets = targets.to(device)
         print('facebank updated')
     else:
-        targets, names = load_facebank(path='facebank')
+        targets, names = load_facebank(path='facebank', device=device)
         print('facebank loaded')
         # targets: number of candidate x 512
 

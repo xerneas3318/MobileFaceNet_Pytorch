@@ -66,22 +66,29 @@ def getFeature(net, dataloader, device, flip = True):
     return featureLs, featureRs
 
 def evaluation_10_fold(featureL, featureR, dataset, method = 'l2_distance'):
-    
-    ### Evaluate the accuracy ###
+    """
+    10-fold cross-validation for face verification.
+    Each fold must use a fresh copy of features so normalization (mean subtract + L2 norm)
+    is computed from that fold's validation set only; mutating in-place would corrupt later folds.
+    """
     ACCs = np.zeros(10)
     threshold = np.zeros(10)
-    fold = np.array(dataset.folds).reshape(1,-1)
-    flags = np.array(dataset.flags).reshape(1,-1)
-    featureLs = featureL.numpy()
-    featureRs = featureR.numpy()
+    fold = np.array(dataset.folds).reshape(1, -1)
+    flags = np.array(dataset.flags).reshape(1, -1)
+    flags_1d = np.squeeze(flags)
+    # Keep originals; copy per fold so we don't mutate across folds
+    featureL_np = featureL.numpy() if hasattr(featureL, 'numpy') else np.asarray(featureL)
+    featureR_np = featureR.numpy() if hasattr(featureR, 'numpy') else np.asarray(featureR)
 
     for i in range(10):
-        
-        valFold = fold != i
-        testFold = fold == i
-        flags = np.squeeze(flags)
-        
-        mu = np.mean(np.concatenate((featureLs[valFold[0], :], featureRs[valFold[0], :]), 0), 0)
+        valFold = (fold != i).ravel()
+        testFold = (fold == i).ravel()
+
+        # Copy so this fold's normalization doesn't affect others
+        featureLs = featureL_np.copy()
+        featureRs = featureR_np.copy()
+
+        mu = np.mean(np.concatenate((featureLs[valFold, :], featureRs[valFold, :]), 0), 0)
         mu = np.expand_dims(mu, 0)
         featureLs = featureLs - mu
         featureRs = featureRs - mu
@@ -89,13 +96,13 @@ def evaluation_10_fold(featureL, featureR, dataset, method = 'l2_distance'):
         featureRs = featureRs / np.expand_dims(np.sqrt(np.sum(np.power(featureRs, 2), 1)), 1)
 
         if method == 'l2_distance':
-            scores = np.sum(np.power((featureLs - featureRs), 2), 1) # L2 distance
+            scores = np.sum(np.power((featureLs - featureRs), 2), 1)
         elif method == 'cos_distance':
-            scores = np.sum(np.multiply(featureLs, featureRs), 1) # cos distance
-        
-        threshold[i] = getThreshold(scores[valFold[0]], flags[valFold[0]], 10000, method)
-        ACCs[i] = getAccuracy(scores[testFold[0]], flags[testFold[0]], threshold[i], method)
-        
+            scores = np.sum(np.multiply(featureLs, featureRs), 1)
+
+        threshold[i] = getThreshold(scores[valFold], flags_1d[valFold], 10000, method)
+        ACCs[i] = getAccuracy(scores[testFold], flags_1d[testFold], threshold[i], method)
+
     return ACCs, threshold
 
 if __name__ == '__main__':

@@ -28,10 +28,12 @@ def transformation_from_points(points1, points2):
     R = (U * Vt).T
     return np.vstack([np.hstack(((s2 / s1) * R, c2.T - (s2 / s1) * R * c1.T)), np.matrix([0., 0., 1.])])
 
-def Face_alignment(img,default_square = True,landmarks = []):
+def Face_alignment(img, default_square=True, landmarks=None):
     # face alignment -- similarity transformation
     faces = []
-    if landmarks != []:
+    if landmarks is not None:
+        landmarks = np.asarray(landmarks)
+    if landmarks is not None and landmarks.size > 0:
         for i in range(landmarks.shape[0]):
             landmark = landmarks[i, :]
             landmark = landmark.reshape(2, 5).T

@@ -1,22 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue May 21 14:36:12 2019
-Generate the annotation file for webface_align_112
+Generate the annotation file for MS1M/faces_emore-style training (path label per line).
+Expects root to contain identity subdirs (id_0, id_1, ...) with images inside.
 
-@author: AIRocker
+Usage:
+  python data_set/anno_generation.py --dataset ms1m-arcface   # ~/Datasets/ms1m-arcface -> ms1m_arcface_align_112.txt
+  python data_set/anno_generation.py --root /path/to/images --file /path/to/list.txt
 """
 import os
 import argparse
 
-parser = argparse.ArgumentParser(description='Annotation file generator')
-parser.add_argument('--root', type=str, default='faces_emore_images', help='image data folder path')
-parser.add_argument('--file', type=str, default='faces_emore_images/faces_emore_align_112.txt', help='anno file path')
+DATASETS_DIR = os.path.expanduser('~/Datasets')
+
+parser = argparse.ArgumentParser(description='Annotation file generator for MS1M/faces_emore-style data')
+parser.add_argument('--dataset', type=str, choices=['ms1m-arcface', 'faces_emore'], default=None,
+                   help='Preset: ms1m-arcface -> ~/Datasets/ms1m-arcface + ms1m_arcface_align_112.txt; faces_emore -> faces_emore_images + faces_emore_align_112.txt')
+parser.add_argument('--root', type=str, default=None, help='Image root (identity subdirs). Overridden by --dataset if set.')
+parser.add_argument('--file', type=str, default=None, help='Output annotation path. Overridden by --dataset if set.')
 args = parser.parse_args()
 
-imgdir = args.root
-list_txt_file = args.file
-docs = [f for f in os.listdir(imgdir) if not f.startswith('.')]
+if args.dataset == 'ms1m-arcface':
+    imgdir = os.path.join(DATASETS_DIR, 'ms1m-arcface')
+    list_txt_file = os.path.join(imgdir, 'ms1m_arcface_align_112.txt')
+elif args.dataset == 'faces_emore':
+    imgdir = 'faces_emore_images'
+    list_txt_file = os.path.join(imgdir, 'faces_emore_align_112.txt')
+else:
+    imgdir = args.root or 'faces_emore_images'
+    list_txt_file = args.file or os.path.join(imgdir, 'faces_emore_align_112.txt')
+docs = [f for f in os.listdir(imgdir) if not f.startswith('.') and os.path.isdir(os.path.join(imgdir, f))]
 docs.sort()
 
 label = 0
